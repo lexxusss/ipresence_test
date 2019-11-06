@@ -1,2 +1,5 @@
 /vendor/
 /logs/*
+/storage/localhost_8004/*
+/.idea
+/composer.lock

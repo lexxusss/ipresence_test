@@ -1,7 +1,15 @@
-<phpunit bootstrap="vendor/autoload.php">
+<phpunit bootstrap="./vendor/autoload.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true">
     <testsuites>
         <testsuite name="IpresenceTests">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <ini name="display_errors" value="true"/>
+        <ini name="display_startup_errors" value="true"/>
+    </php>
 </phpunit>

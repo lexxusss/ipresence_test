@@ -48,7 +48,7 @@ class ShoutController
         $personParsed = strtolower(trim(snakeCaseToSpaceCase($personOriginal)));
 
         $maxLimit = $this->settings['shout']['max_limit'];
-        $limit = min($request->getQueryParam('limit'), $maxLimit);
+        $limit = min(abs($request->getQueryParam('limit', $maxLimit)), $maxLimit);
 
         $found = $this->shoutService->getShoutQuotes($personParsed, $limit);
 

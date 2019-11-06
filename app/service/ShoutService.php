@@ -27,6 +27,16 @@ class ShoutService
     protected $serverUri;
 
     /**
+     * @var string
+     */
+    protected $cacheFolder;
+
+    /**
+     * @var float|int
+     */
+    protected $cacheTime;
+
+    /**
      * @var ExtendedCacheItemPoolInterface
      */
     protected $cacheService;
@@ -43,10 +53,16 @@ class ShoutService
     public function __construct()
     {
         $this->serverUri = 'https://raw.githubusercontent.com/iPresence/backend_test/master/quotes.json';
+        $this->cacheTime = 60 * 60 * 24;
+        $this->cacheFolder = __DIR__ . '/../../storage/';
+        if (!file_exists($this->cacheFolder)) {
+            mkdir($this->cacheFolder, 0755, true);
+        } elseif (substr(sprintf('%o', fileperms($this->cacheFolder)), -4) != 0755) {
+            chmod($this->cacheFolder, 0755);
+        }
 
         $cacheConfig = new ConfigurationOption();
-        $cacheConfig->setDefaultChmod(755);
-        $cacheConfig->setDefaultTtl(3000); // 50 min
+        $cacheConfig->setDefaultChmod(0755);
         $cacheConfig->setPath(__DIR__ . '/../../storage/');
 
         $this->cacheService = CacheManager::getInstance("files", $cacheConfig);
@@ -69,7 +85,7 @@ class ShoutService
 
         $found = $this->askServer($person, $limit);
 
-        $cacheItem->set($found)->expiresAfter(60);
+        $cacheItem->set($found)->expiresAfter($this->cacheTime);
         $this->cacheService->save($cacheItem);
 
         return $found;
@@ -86,7 +102,7 @@ class ShoutService
         $serverData = json_decode(file_get_contents($this->serverUri), JSON_OBJECT_AS_ARRAY);
         $quotes = $serverData['quotes'];
         foreach ($quotes as $quoteData) {
-            if ($limit && strtolower(trim($quoteData['author'])) == $person) {
+            if ($limit && strtolower(trim($quoteData['author'], "-_– \t\n\r\0\x0B")) == $person) {
                 $found[] = rtrim(mb_strtoupper($quoteData['quote']), '.!') . '!';
                 $limit--;
             }
