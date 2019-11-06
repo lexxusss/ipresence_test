@@ -1,0 +1,19 @@
+version: '2'
+
+volumes:
+    logs:
+        driver: local
+
+services:
+    ipresence-test:
+        image: php:7-alpine
+        container_name: ipresence_test
+        working_dir: /var/www
+        command: php -S 0.0.0.0:8080 -t public
+        environment:
+            docker: "true"
+        ports:
+            - 8080:8080
+        volumes:
+            - .:/var/www
+            - logs:/var/www/logs
