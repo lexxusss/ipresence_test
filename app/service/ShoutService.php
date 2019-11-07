@@ -79,32 +79,28 @@ class ShoutService
     {
         $cacheItem = $this->cacheService->getItem($person);
 
-        if ($found = $cacheItem->get()) {
-            return array_slice($found, 0, $limit);
+        if (!($found = $cacheItem->get())) {
+            $found = $this->askServer($person);
+
+            $cacheItem->set($found)->expiresAfter($this->cacheTime);
+            $this->cacheService->save($cacheItem);
         }
 
-        $found = $this->askServer($person, $limit);
-
-        $cacheItem->set($found)->expiresAfter($this->cacheTime);
-        $this->cacheService->save($cacheItem);
-
-        return $found;
+        return array_slice($found, 0, $limit);
     }
 
     /**
      * @param $person
-     * @param $limit
      * @return array
      */
-    protected function askServer($person, $limit)
+    protected function askServer($person)
     {
         $found = [];
         $serverData = json_decode(file_get_contents($this->serverUri), JSON_OBJECT_AS_ARRAY);
         $quotes = $serverData['quotes'];
         foreach ($quotes as $quoteData) {
-            if ($limit && strtolower(trim($quoteData['author'], "-_– \t\n\r\0\x0B")) == $person) {
+            if (strtolower(trim($quoteData['author'], "-_– \t\n\r\0\x0B")) == $person) {
                 $found[] = rtrim(mb_strtoupper($quoteData['quote']), '.!') . '!';
-                $limit--;
             }
         }
 

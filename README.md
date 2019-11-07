@@ -33,3 +33,22 @@ curl -s http://awesomequotesapi.com/shout/steve-jobs?limit=2
 * **Design**: We know this is a very simple application but we want to see how you design code. We value having a clear application architecture, that helps maintain it (and make changes requested by the product owner) for years.
 * **Testing**: We love automated testing and we love reliable tests. We like testing for two reasons: First, good tests let us deploy to production without fear (even on a Friday!). Second, tests give a fast feedback cycle so developers in dev phase know if their changes are breaking anything.
 * **Simplicity**: If our product owner asks us for the same application but accessed by command line (instead of the http server) it should be super easy to bring to life!
+
+# SOLUTION:
+
+#### run app:
+- docker-compose up -d
+
+#### run tests:
+- ./vendor/bin/phpunit
+
+#### run api:
+- curl -s http://localhost:8004/shout/Audrey-hepburn?limit=5
+
+#### key files:
+- app/route/shout_quote_route.php
+- app/controllers/ShoutController.php
+- app/service/ShoutService.php
+- tests/Unit/ShoutingTest.php
+
+

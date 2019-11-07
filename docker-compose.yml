@@ -1,4 +1,4 @@
-version: '2'
+version: '3'
 
 volumes:
     logs:
@@ -6,14 +6,21 @@ volumes:
 
 services:
     ipresence-test:
-        image: php:7-alpine
+        build:
+            context: ./
+            dockerfile: ./Dockerfile
         container_name: ipresence_test
-        working_dir: /var/www
-        command: php -S 0.0.0.0:8080 -t public
+        working_dir: /var/www/html
+        command:
+            - /bin/sh
+            - -c
+            - |
+                /usr/local/bin/composer.phar update
+                php -S 0.0.0.0:8080 -t public
         environment:
             docker: "true"
         ports:
-            - 8080:8080
+            - 8004:8080
         volumes:
-            - .:/var/www
-            - logs:/var/www/logs
+            - .:/var/www/html
+            - logs:/var/www/html/logs
