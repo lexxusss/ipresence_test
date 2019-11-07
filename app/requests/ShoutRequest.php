@@ -6,6 +6,10 @@ use App\Exceptions\MaxLimitAchievedException;
 use Slim\Http\Request;
 use Slim\Http\StatusCode;
 
+/**
+ * Class ShoutRequest
+ * @package App\Requests
+ */
 class ShoutRequest
 {
     /**

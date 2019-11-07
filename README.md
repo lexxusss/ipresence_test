@@ -49,6 +49,7 @@ curl -s http://awesomequotesapi.com/shout/steve-jobs?limit=2
 - app/route/shout_quote_route.php
 - app/controllers/ShoutController.php
 - app/service/ShoutService.php
+- app/requests/ShoutRequest.php
 - tests/Unit/ShoutingTest.php
 
 
