@@ -2,10 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Exceptions\MaxLimitAchievedException;
+use App\Requests\ShoutRequest;
 use App\service\ShoutService;
 use Phpfastcache\Exceptions\PhpfastcacheInvalidArgumentException;
 use Slim\Http\Request;
 use Slim\Http\Response;
+use Slim\Http\StatusCode;
 
 
 /**
@@ -14,11 +17,6 @@ use Slim\Http\Response;
  */
 class ShoutController
 {
-    /**
-     * @var array
-     */
-    protected $settings;
-
     /**
      * @var ShoutService
      */
@@ -30,8 +28,6 @@ class ShoutController
      */
     public function __construct(ShoutService $shoutService)
     {
-        $this->settings = (require __DIR__ . "/../../src/settings.php")['settings'];
-
         $this->shoutService = $shoutService;
     }
 
@@ -39,23 +35,23 @@ class ShoutController
      * @param Request $request
      * @param Response $response
      * @param array $args
-     * @return int
+     * @return int|Response
      * @throws PhpfastcacheInvalidArgumentException
      */
     public function shout(Request $request, Response $response, $args = [])
     {
-        $personOriginal = $request->getAttribute('person');
-        $personParsed = strtolower(trim(snakeCaseToSpaceCase($personOriginal)));
+        $shoutRequest = new ShoutRequest($request);
 
-        $maxLimit = $this->settings['shout']['max_limit'];
-        $limit = min(abs($request->getQueryParam('limit', $maxLimit)), $maxLimit);
+        try {
+            $shoutRequest->validate();
+        } catch (MaxLimitAchievedException $e) {
+            return $response->withStatus(StatusCode::HTTP_BAD_REQUEST, $e->getMessage());
+        }
 
-        $found = $this->shoutService->getShoutQuotes($personParsed, $limit);
+        $found = $this->shoutService->getShoutQuotes($shoutRequest->getPerson(), $shoutRequest->getLimit());
 
         return $response
             ->getBody()
-            ->write(
-                json_encode($found, JSON_UNESCAPED_UNICODE)
-            );
+            ->write(json_encode($found, JSON_UNESCAPED_UNICODE));
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Slim\Http\StatusCode;
 use Tests\BaseTestCase;
 
@@ -62,20 +63,35 @@ class ShoutingTest extends BaseTestCase
         $this->makeSimpleTest('steve jobs', -20);
     }
 
+    public function testSirClausMoser()
+    {
+        $this->makeSimpleTest('sir-claus_moser', 0);
+    }
+
+    public function testAbigailVanBuren()
+    {
+        $this->makeSimpleTest('--abigail van buren--');
+    }
+
     /**
      * @param $author
      * @param null $limit
      */
     protected function makeSimpleTest($author, $limit = null)
     {
-        $maxLimit = min(($limit ? abs($limit) : $this->maxQuotesLimit), $this->maxQuotesLimit);
+        try {
+            $response = $this->client->get("shout/$author?limit=$limit");
+        } catch (ClientException $e) {
+            $this->assertContains("Parameter limit must not be more than {$this->maxQuotesLimit}.", $e->getMessage());
 
-        $response = $this->client->get("shout/$author?limit=$limit");
+            return;
+        }
+
         $quotes = json_decode($response->getBody()->getContents(), JSON_OBJECT_AS_ARRAY);
 
         $this->assertEquals(StatusCode::HTTP_OK, $response->getStatusCode());
         $this->assertGreaterThan(0, count($quotes));
-        $this->assertLessThanOrEqual($maxLimit, count($quotes));
+        $this->assertLessThanOrEqual($this->maxQuotesLimit, count($quotes));
 
         foreach ($quotes as $quote) {
             $this->assertEquals(mb_strtoupper($quote), $quote);
